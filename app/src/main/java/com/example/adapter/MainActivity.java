@@ -53,9 +53,9 @@ public class MainActivity extends AppCompatActivity {
         db = new MyDB(this, "ContactDB", null, 1);
 
         //Thêm dữ liệu lần đầu vào db
-//        db.addContact(new Contact(1, "img1", "Trần Văn An", "56789056"));
-//        db.addContact(new Contact(2, "img2", "Nguyễn Thế Hiền", "45678520"));
-//        db.addContact(new Contact(3, "img3", "Bùi Phương Linh", "69553114"));
+        db.addContact(new Contact(1, "img1", "Trần Văn An", "56789056"));
+        db.addContact(new Contact(2, "img2", "Nguyễn Thế Hiền", "45678520"));
+        db.addContact(new Contact(3, "img3", "Bùi Phương Linh", "69553114"));
 
         ContactList = db.getAllContact();
 
@@ -99,9 +99,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
+        //Long click
+        lstContact.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                SelectedItemId = position;
+                return false;
+            }
+        });
     }
     //Hết onCreate
+
 
 
     //Tạo menu item
