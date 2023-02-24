@@ -53,9 +53,9 @@ public class MainActivity extends AppCompatActivity {
         db = new MyDB(this, "ContactDB", null, 1);
 
         //Thêm dữ liệu lần đầu vào db
-        db.addContact(new Contact(1, "img1", "Trần Văn An", "56789056"));
-        db.addContact(new Contact(2, "img2", "Nguyễn Thế Hiền", "45678520"));
-        db.addContact(new Contact(3, "img3", "Bùi Phương Linh", "69553114"));
+//        db.addContact(new Contact(1, "img1", "Trần Văn An", "56789056"));
+//        db.addContact(new Contact(2, "img2", "Nguyễn Thế Hiền", "45678520"));
+//        db.addContact(new Contact(3, "img3", "Bùi Phương Linh", "69553114"));
 
         ContactList = db.getAllContact();
 
@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
                         ContactList.remove(SelectedItemId);
                         ListAdapter = new Adapter(ContactList, MainActivity.this);
                         lstContact.setAdapter(ListAdapter);
@@ -243,7 +244,8 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == 100 && resultCode == 150)
         {
             //Truong hop them
-            ContactList.add(newcontact);
+            db.addContact(newcontact);
+            ContactList = db.getAllContact();
             ListAdapter = new Adapter(ContactList, this);
             lstContact.setAdapter(ListAdapter);
 
