@@ -86,5 +86,18 @@ public class MyDB extends SQLiteOpenHelper {
     {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues value = new ContentValues();
+        //value.put(Id, contact.getId());
+        value.put(Name, contact.getName());
+        value.put(Image, contact.getImages());
+        value.put(Phone, contact.getPhone());
+
+        db.update(TableName, value, "id = " + String.valueOf(id), null);
+        db.close();
+    }
+
+    public void deleteContact(int id)
+    {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(TableName, "id = " + String.valueOf(id), null);
     }
 }

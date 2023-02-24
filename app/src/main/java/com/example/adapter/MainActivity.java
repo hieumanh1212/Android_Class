@@ -196,8 +196,9 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
-                        ContactList.remove(SelectedItemId);
+                        db.deleteContact(con.getId());
+                        ContactList = db.getAllContact();
+                        //ContactList.remove(SelectedItemId);
                         ListAdapter = new Adapter(ContactList, MainActivity.this);
                         lstContact.setAdapter(ListAdapter);
                     }
@@ -253,12 +254,21 @@ public class MainActivity extends AppCompatActivity {
         else if(requestCode == 200 && resultCode == 150)
         {
             //Truong hop sua
+//            for(Contact c: ContactList)
+//            {
+//                if(c.getId() == id)
+//                {
+//                    c.setName(name);
+//                    c.setPhone(phone);
+//                }
+//            }
             for(Contact c: ContactList)
             {
                 if(c.getId() == id)
                 {
                     c.setName(name);
                     c.setPhone(phone);
+                    db.updateContact(id, c);
                 }
             }
 
