@@ -2,6 +2,7 @@ package com.example.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,11 +78,12 @@ public class Adapter extends BaseAdapter implements Filterable {
         View v = view;
         if(v == null)
             v = inflater.inflate(R.layout.contactitem, null);
-        ImageView imgprofile = v.findViewById(R.id.imageView);
         TextView tvname = v.findViewById(R.id.tvName);
         tvname.setText(data.get(i).getName());
         TextView tvphone = v.findViewById(R.id.tvPhone);
         tvphone.setText(data.get(i).getPhone());
+        ImageView imgprofile = v.findViewById(R.id.imageView);
+        //imgprofile.setImageURI(Uri.parse(data.get(i).getImages()));
         return v;
     }
 

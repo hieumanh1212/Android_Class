@@ -4,11 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.CallLog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.ContextMenu;
@@ -25,6 +32,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import android.Manifest;
+import android.widget.Toast;
+import android.Manifest.permission;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +49,12 @@ public class MainActivity extends AppCompatActivity {
     private Contact c;
 
     private MyDB db;
+
+    private ContentProvider cp;
+
+    ConnectionReceiver receiver;
+
+    IntentFilter intentFilter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
         ContactList = db.getAllContact();
 
         lstContact = findViewById(R.id.lstContact);
-        ListAdapter = new Adapter(ContactList, this);
-        lstContact.setAdapter(ListAdapter);
+//        ListAdapter = new Adapter(ContactList, this);
+//        lstContact.setAdapter(ListAdapter);
 
         etSearch = findViewById(R.id.etSearch);
 
@@ -107,8 +123,79 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+
+        ShowContact();
+
+        receiver = new ConnectionReceiver();
+        intentFilter = new IntentFilter("com.example.listview2023.SOME_ACTION");
+        intentFilter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(receiver, intentFilter);
     }
     //Hết onCreate
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        registerReceiver(receiver, intentFilter);
+    }
+
+    //Yêu cầu quyền Allow
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 400){
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                this.ShowContact();
+            } else {
+                Toast.makeText(this, "Until you grant the permission, we can't access", Toast.LENGTH_SHORT).show();
+            }
+        }
+        if(requestCode==1){
+            if(grantResults.length>0&&grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                if(ContextCompat.checkSelfPermission(MainActivity.this, permission.READ_CALL_LOG)==PackageManager.PERMISSION_GRANTED){
+//                    String [] projection = new String[]{CallLog.Calls.DATE, CallLog.Calls.NUMBER, CallLog.Calls.DURATION};
+//                    Cursor cursor = getContentResolver().query(CallLog.Calls.CONTENT_URI,projection, CallLog.Calls.DURATION+"<?",new String[]{"30"}, CallLog.Calls.DATE+" Asc");
+//                    cursor.moveToFirst();
+//                    String s="";
+//                    while (cursor.isAfterLast()==false){
+//                        for(int i=0;i<cursor.getColumnCount();i++)
+//                            s+=cursor.getString(i)+" - ";
+//                        s+="\n";
+//                        cursor.moveToNext();
+//                    }
+//                    cursor.close();
+//                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+                }
+
+            }else{
+                Toast.makeText(this, "No permission granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    //Hiển thị từ Contact thật sang
+    private void ShowContact()
+    {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            checkSelfPermission(Manifest.permission.READ_CONTACTS)
+                    != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
+                    400);
+        } else {
+            cp = new ContentProvider(this);
+            ContactList = cp.getAllContact();
+            ListAdapter = new Adapter(ContactList, this);
+            lstContact.setAdapter(ListAdapter);
+        }
+    }
 
 
 
@@ -154,6 +241,47 @@ public class MainActivity extends AppCompatActivity {
                         return (Integer.parseInt(o1.getPhone()) - Integer.parseInt(o2.getPhone()));
                     }
                 });
+                break;
+            case R.id.mnuCallLog:
+                //Nếu chưa được allow
+                if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CALL_LOG)!=PackageManager.PERMISSION_GRANTED){
+                    if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.READ_CALL_LOG)){
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.READ_CALL_LOG},1);
+                    }else{
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.READ_CALL_LOG},1);
+                    }
+               }
+                else {
+                    String [] projection = new String[]{CallLog.Calls.DATE, CallLog.Calls.NUMBER, CallLog.Calls.DURATION};
+                    Cursor cursor = getContentResolver().query(CallLog.Calls.CONTENT_URI,projection, CallLog.Calls.DURATION+"<?",new String[]{"30"}, CallLog.Calls.DATE+" Asc");
+                    cursor.moveToFirst();
+                    String s="";
+                    while (cursor.isAfterLast()==false){
+                        for(int i=0;i<cursor.getColumnCount();i++)
+                            s+=cursor.getString(i)+" - ";
+                        s+="\n";
+                        cursor.moveToNext();
+                    }
+                    cursor.close();
+                    Toast.makeText(this, s, Toast.LENGTH_LONG).show();
+                }
+                break;
+            case R.id.mnuBrowser:
+                if (ContextCompat.checkSelfPermission(this, permission.READ_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    // Đã được cấp quyền truy cập, thực hiện truy vấn lịch sử trình duyệt
+                    // ...
+                } else {
+                    // Chưa được cấp quyền truy cập, yêu cầu cấp quyền
+                    ActivityCompat.requestPermissions(this, new String[]{permission.READ_EXTERNAL_STORAGE},
+                            2);
+                }
+
+                break;
+            case R.id.mnuBroadcast:
+                Intent intent = new Intent("com.example.listview2023.SOME_ACTION");
+                sendBroadcast(intent);
+
                 break;
         }
         ListAdapter = new Adapter(ContactList, this);
@@ -241,7 +369,8 @@ public class MainActivity extends AppCompatActivity {
         int id = b.getInt("Id");
         String name = b.getString("Name");
         String phone = b.getString("Phone");
-        Contact newcontact = new Contact(id, "Image", name, phone);
+        String image = b.getString("Image");
+        Contact newcontact = new Contact(id, image, name, phone);
         if(requestCode == 100 && resultCode == 150)
         {
             //Truong hop them

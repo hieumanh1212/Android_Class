@@ -8,4 +8,13 @@
     <item
         android:id="@+id/mnuSortPhone"
         android:title="Sort by Phone" />
+    <item
+        android:id="@+id/mnuCallLog"
+        android:title="CallLog" />
+    <item
+        android:id="@+id/mnuBrowser"
+        android:title="Browser History" />
+    <item
+        android:id="@+id/mnuBroadcast"
+        android:title="Broadcast" />
 </menu>
